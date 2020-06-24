@@ -3,7 +3,9 @@ import { getRootQuery } from 'gatsby-source-graphql-universal/getRootQuery';
 import { onCreateWebpackConfig, sourceNodes } from 'gatsby-source-graphql-universal/gatsby-node';
 import { flatten, fieldName, PrismicLink, typeName, getPagePreviewPath } from './utils';
 import { Page, PluginOptions } from './interfaces/PluginOptions';
-import { createRemoteFileNode } from 'gatsby-source-filesystem';
+import { createRemoteFileNode } from 'gatsby-source-filesystem'; 
+import { Endpoints, EditButton } from './utils/prismic';
+
 import { pathToRegexp, compile as compilePath, Key } from 'path-to-regexp';
 import querystring from 'querystring';
 
@@ -28,6 +30,7 @@ exports.onCreatePage = ({ page, actions }: any) => {
   page.context = page.context || {};
   if (rootQuery) {
     page.context.rootQuery = rootQuery;
+    page.context.headers = { [EditButton.HEADER_NAME]: page.path };
     actions.createPage(page);
   }
 };
@@ -38,7 +41,7 @@ exports.sourceNodes = (ref: any, options: PluginOptions) => {
     typeName,
     createLink: () =>
       PrismicLink({
-        uri: `https://${options.repositoryName}.prismic.io/graphql`,
+        uri: Endpoints.graphql(options.repositoryName),
         credentials: 'same-origin',
         accessToken: accessToken as any,
         customRef: options.prismicRef as any,
@@ -137,6 +140,7 @@ function createDocumentPages(
       path,
       component: page.component,
       context: {
+        headers: { [EditButton.HEADER_NAME]: path },
         rootQuery: getRootQuery(page.component),
         ...node._meta,
         cursor,
