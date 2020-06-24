@@ -3,8 +3,9 @@ import { getRootQuery } from 'gatsby-source-graphql-universal/getRootQuery';
 import { onCreateWebpackConfig, sourceNodes } from 'gatsby-source-graphql-universal/gatsby-node';
 import { flatten, fieldName, PrismicLink, typeName, getPagePreviewPath } from './utils';
 import { Page, PluginOptions } from './interfaces/PluginOptions';
-import { createRemoteFileNode } from 'gatsby-source-filesystem';
+import { createRemoteFileNode } from 'gatsby-source-filesystem'; 
 import { Endpoints, EditButton } from './utils/prismic';
+
 import { pathToRegexp, compile as compilePath, Key } from 'path-to-regexp';
 import querystring from 'querystring';
 
@@ -215,9 +216,12 @@ exports.createPages = async ({ graphql, actions: { createPage } }: any, options:
     endCursor: string = '',
     documents: Edge[] = []
   ): Promise<Edge[]> {
+    // Format page.type so that the graphql query doesn't complain.
+    const pageTypeUnderscored = page.type.toLowerCase().split(' ').join('_');
+    const pageTypeFormatted = pageTypeUnderscored.charAt(0).toUpperCase() + pageTypeUnderscored.slice(1);
     // Prepare and execute query
-    const documentType: string = `all${page.type}s`;
-    const sortType: string = `PRISMIC_Sort${page.type}y`;
+    const documentType: string = `all${pageTypeFormatted}s`;
+    const sortType: string = `PRISMIC_Sort${pageTypeFormatted}y`;
     const extraPageFields = options.extraPageFields || '';
     const query: string = getDocumentsQuery({ documentType, sortType, extraPageFields });
     const { data, errors } = await graphql(query, {
@@ -303,9 +307,10 @@ exports.createResolvers = (
           resolve(source: any, args: any) {
             const obj = (source && source[fieldName]) || {};
             const url = args.crop ? obj[args.crop] && obj[args.crop].url : obj.url;
+
             if (url) {
               return createRemoteFileNode({
-                url: querystring.unescape(url),
+                url: querystring.unescape(url).replace(/\?.*$/g, ''),
                 store,
                 cache,
                 createNode,

@@ -29,7 +29,8 @@ const stripSharp = (query: any) => {
       x.kind == 'Name' &&
       this.parent &&
       this.parent.node.kind === 'Field' &&
-      x.value.match(/Sharp$/)
+      x.value.match(/Sharp$/) &&
+      !x.value.match(/.+childImageSharp$/)
     ) {
       this.parent.delete();
     }
@@ -138,7 +139,7 @@ export class WrapPage extends React.PureComponent<any, WrapPageState> {
     return getApolloClient(this.props.options).then(client => {
       return client.query({
         query: stripSharp(getIsolatedQuery(query, fieldName, typeName)),
-        fetchPolicy: 'network-only',
+        fetchPolicy: 'no-cache',
         variables,
         ...rest,
       });
@@ -146,9 +147,15 @@ export class WrapPage extends React.PureComponent<any, WrapPageState> {
   };
 
   render() {
-    const children = this.props.children as any;
+    const props = this.props as { children: any, options: any, [key: string]: any}
+
+    // we need to pass the parent props to the child
+    // but we don't want to pass the prismic options or the children props
+    // so exclude those and take everything else
+    const { children, options, ...elProps } = props
 
     return React.cloneElement(children, {
+      ...elProps,
       ...children.props,
       prismic: {
         options: this.props.options,
