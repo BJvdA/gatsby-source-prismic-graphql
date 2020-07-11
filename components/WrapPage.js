@@ -116,7 +116,7 @@ var WrapPage = /*#__PURE__*/function (_React$PureComponent) {
         query += queryOrSource(fragment);
       });
       var keys = [].concat((0, _toConsumableArray2.default)(_this.props.options.passContextKeys || []), (0, _toConsumableArray2.default)(_this.keys));
-      variables = (0, _objectSpread2.default)({}, (0, _pick.default)(_this.params, keys), variables);
+      variables = (0, _objectSpread2.default)({}, _this.props.pageContext, (0, _pick.default)(_this.params, keys), variables);
       return (0, _getApolloClient.getApolloClient)(_this.props.options).then(function (client) {
         return client.query((0, _objectSpread2.default)({
           query: stripSharp((0, _gatsbySourceGraphqlUniversal.getIsolatedQuery)(query, _utils.fieldName, _utils.typeName)),
