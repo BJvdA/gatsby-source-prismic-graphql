@@ -134,7 +134,7 @@ export class WrapPage extends React.PureComponent<any, WrapPageState> {
     });
 
     const keys = [...(this.props.options.passContextKeys || []), ...this.keys];
-    variables = { ...pick(this.params, keys), ...variables };
+    variables = { ...this.props.pageContext, ...pick(this.params, keys), ...variables };
 
     return getApolloClient(this.props.options).then(client => {
       return client.query({
